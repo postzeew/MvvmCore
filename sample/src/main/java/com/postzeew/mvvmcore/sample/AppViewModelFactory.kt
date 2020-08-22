@@ -2,13 +2,19 @@ package com.postzeew.mvvmcore.sample
 
 import androidx.lifecycle.ViewModel
 import com.postzeew.mvvmcore.ViewModelFactory
+import javax.inject.Inject
+import javax.inject.Provider
+import javax.inject.Singleton
 
-class AppViewModelFactory : ViewModelFactory() {
+@Singleton
+class AppViewModelFactory @Inject constructor(
+    private val viewModelsProviders: Map<Class<out ViewModel>, @JvmSuppressWildcards Provider<ViewModel>>
+) : ViewModelFactory() {
+
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        val viewModelProvider = viewModelsProviders[modelClass]
+            ?: throw IllegalArgumentException("ViewModelProvider for $modelClass not found.")
         @Suppress("UNCHECKED_CAST")
-        return when (modelClass) {
-            MainViewModelImpl::class.java -> MainViewModelImpl()
-            else -> throw error("ViewModel for class $modelClass not found.")
-        } as T
+        return viewModelProvider.get() as T
     }
 }

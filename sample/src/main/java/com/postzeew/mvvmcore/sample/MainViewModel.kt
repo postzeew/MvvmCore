@@ -2,7 +2,8 @@ package com.postzeew.mvvmcore.sample
 
 import com.postzeew.mvvmcore.BaseViewModel
 import com.postzeew.mvvmcore.BaseViewModelImpl
+import javax.inject.Inject
 
 interface MainViewModel : BaseViewModel
 
-class MainViewModelImpl : BaseViewModelImpl(), MainViewModel
+class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewModel
