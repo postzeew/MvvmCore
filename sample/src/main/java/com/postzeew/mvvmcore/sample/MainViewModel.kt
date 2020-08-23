@@ -1,10 +1,10 @@
 package com.postzeew.mvvmcore.sample
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.postzeew.mvvmcore.BaseViewModel
 import com.postzeew.mvvmcore.BaseViewModelImpl
+import com.postzeew.mvvmcore.SingleLiveEvent
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -20,7 +20,7 @@ interface MainViewModel : BaseViewModel {
 }
 
 class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewModel {
-    override val dateTime = MutableLiveData<String>()
+    override val dateTime = SingleLiveEvent<String>()
 
     private val api = Retrofit.Builder()
         .baseUrl(BASE_URL)
@@ -30,7 +30,7 @@ class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewMod
 
     override fun onViewCreated() {
         viewModelScope.launch {
-            executeBlockingAction(dateTime) {
+            executeUnblockingAction(dateTime) {
                 getDateTime()
             }
         }
@@ -38,7 +38,7 @@ class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewMod
 
     override fun onRetryClicked() {
         viewModelScope.launch {
-            executeBlockingAction(dateTime) {
+            executeUnblockingAction(dateTime) {
                 getDateTime()
             }
         }

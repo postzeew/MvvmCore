@@ -3,6 +3,7 @@ package com.postzeew.mvvmcore.sample
 import android.app.Application
 import android.graphics.Color
 import com.postzeew.mvvmcore.MvvmCore
+import com.postzeew.mvvmcore.OverlayLoaderView
 import com.postzeew.mvvmcore.ScreenStateView
 import com.postzeew.mvvmcore.sample.di.DaggerAppComponent
 
@@ -36,6 +37,9 @@ class App : Application() {
                 loaderConfig = ScreenStateView.Config.LoaderConfig(
                     color = Color.BLUE
                 )
+            ),
+            overlayLoaderViewConfig = OverlayLoaderView.Config(
+                color = Color.GREEN
             )
         )
     }
