@@ -45,6 +45,9 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$livecycleViewmodelKtxVersion"
 
+    // Core UI
+    implementation "com.google.android.material:material:$materialVersion"
+
     // Retrofit
     implementation "com.squareup.retrofit2:retrofit:2.9.0"
 }

@@ -7,13 +7,16 @@ import com.postzeew.mvvmcore.error.ErrorInfoResolver
 object MvvmCore {
     internal lateinit var viewModelFactory: ViewModelFactory
     internal lateinit var errorInfoResolver: ErrorInfoResolver
+    internal var screenStateViewConfig: ScreenStateView.Config? = null
 
     fun init(
         appContext: Context,
         viewModelFactory: ViewModelFactory,
-        errorInfoResolver: ErrorInfoResolver = BaseErrorInfoResolver(appContext = appContext)
+        errorInfoResolver: ErrorInfoResolver = BaseErrorInfoResolver(appContext = appContext),
+        screenStateViewConfig: ScreenStateView.Config? = null
     ) {
         this.viewModelFactory = viewModelFactory
         this.errorInfoResolver = errorInfoResolver
+        this.screenStateViewConfig = screenStateViewConfig
     }
 }
