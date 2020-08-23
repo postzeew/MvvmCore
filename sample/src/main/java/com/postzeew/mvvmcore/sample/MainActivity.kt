@@ -16,6 +16,6 @@ class MainActivity : ViewModelActivity<MainViewModel>(viewModelImplClass = MainV
 
     override fun subscribeToViewModel() {
         super.subscribeToViewModel()
-        viewModel.text.observe(this, Observer { textView.text = it })
+        viewModel.dateTime.observe(this, Observer { textView.text = it })
     }
 }

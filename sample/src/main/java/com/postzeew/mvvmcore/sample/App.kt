@@ -8,6 +8,9 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        MvvmCore.init(DaggerAppComponent.create().getAppViewModelFactory())
+        MvvmCore.init(
+            appContext = this,
+            viewModelFactory = DaggerAppComponent.create().getAppViewModelFactory()
+        )
     }
 }

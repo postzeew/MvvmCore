@@ -52,6 +52,6 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
     }
 
     private fun showError(throwable: Throwable) {
-        Toast.makeText(this, throwable.getInfo(this).toString(), Toast.LENGTH_LONG).show()
+        Toast.makeText(this, MvvmCore.errorInfoResolver.resolveErrorInfo(throwable).toString(), Toast.LENGTH_LONG).show()
     }
 }

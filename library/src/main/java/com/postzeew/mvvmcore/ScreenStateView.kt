@@ -39,7 +39,7 @@ class ScreenStateView @JvmOverloads constructor(
             is State.Error -> {
                 loadingFl.gone()
 
-                val errorInfo = localState.throwable.getInfo(context)
+                val errorInfo = MvvmCore.errorInfoResolver.resolveErrorInfo(localState.throwable)
                 errorTitleTv.text = errorInfo.title
                 errorDescriptionTv.text = errorInfo.description
                 errorLl.show()

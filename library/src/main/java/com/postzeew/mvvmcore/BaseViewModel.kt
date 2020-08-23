@@ -13,16 +13,16 @@ interface BaseViewModel {
     val showLoaderOverContent: LiveData<Boolean>
     val showErrorOverContent: LiveData<Throwable>
 
-    suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: () -> T)
+    suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: suspend () -> T)
 
-    suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: () -> T)
+    suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: suspend () -> T)
 
-    suspend fun executeEmptyBlockingAction(action: () -> Unit)
+    suspend fun executeEmptyBlockingAction(action: suspend () -> Unit)
 
-    suspend fun executeEmptyUnblockingAction(action: () -> Unit)
+    suspend fun executeEmptyUnblockingAction(action: suspend () -> Unit)
 
     suspend fun <T> executeCustomAction(
-        action: () -> T,
+        action: suspend () -> T,
         onActionStarted: (() -> Unit)? = null,
         onActionEnded: (() -> Unit)? = null,
         onActionCompleted: (T) -> Unit,
@@ -30,7 +30,7 @@ interface BaseViewModel {
     )
 
     suspend fun executeEmptyCustomAction(
-        action: () -> Unit,
+        action: suspend () -> Unit,
         onActionStarted: (() -> Unit)? = null,
         onActionEnded: (() -> Unit)? = null,
         onActionCompleted: (() -> Unit)? = null,
@@ -43,31 +43,33 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
     override val showLoaderOverContent = MutableLiveData<Boolean>()
     override val showErrorOverContent = SingleLiveEvent<Throwable>()
 
-    override suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: () -> T) {
+    override suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: suspend () -> T) {
         executeAction(action, BLOCKING, resultLiveData::setValue)
     }
 
-    override suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: () -> T) {
+    override suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: suspend () -> T) {
         executeAction(action, UNBLOCKING, resultLiveData::setValue)
     }
 
-    override suspend fun executeEmptyBlockingAction(action: () -> Unit) {
+    override suspend fun executeEmptyBlockingAction(action: suspend () -> Unit) {
         executeAction(action, BLOCKING)
     }
 
-    override suspend fun executeEmptyUnblockingAction(action: () -> Unit) {
+    override suspend fun executeEmptyUnblockingAction(action: suspend () -> Unit) {
         executeAction(action, UNBLOCKING)
     }
 
     override suspend fun <T> executeCustomAction(
-        action: () -> T,
+        action: suspend () -> T,
         onActionStarted: (() -> Unit)?,
         onActionEnded: (() -> Unit)?,
         onActionCompleted: (T) -> Unit,
         onActionFailed: ((Throwable) -> Unit)?
     ) {
         onActionStarted?.invoke()
-        val result = runCatching(action)
+        val result = com.postzeew.mvvmcore.runCatching {
+            action.invoke()
+        }
         onActionEnded?.invoke()
         @Suppress("UNCHECKED_CAST")
         when (result) {
@@ -77,14 +79,16 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
     }
 
     override suspend fun executeEmptyCustomAction(
-        action: () -> Unit,
+        action: suspend () -> Unit,
         onActionStarted: (() -> Unit)?,
         onActionEnded: (() -> Unit)?,
         onActionCompleted: (() -> Unit)?,
         onActionFailed: ((Throwable) -> Unit)?
     ) {
         onActionStarted?.invoke()
-        val result = runCatching(action)
+        val result = com.postzeew.mvvmcore.runCatching {
+            action.invoke()
+        }
         onActionEnded?.invoke()
         @Suppress("UNCHECKED_CAST")
         when (result) {
@@ -93,15 +97,15 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
         }
     }
 
-    private suspend fun <T> executeAction(action: () -> T, actionType: ActionType, successAction: ((T) -> Unit)? = null) {
+    private suspend fun <T> executeAction(action: suspend () -> T, actionType: ActionType, successAction: ((T) -> Unit)? = null) {
         onActionStarted(actionType)
         val result = executeActionOnBackgroundThread(action)
         onActionEnded(result, actionType, successAction)
     }
 
-    private suspend fun <T> executeActionOnBackgroundThread(action: () -> T): Result {
+    private suspend fun <T> executeActionOnBackgroundThread(action: suspend () -> T): Result {
         return withContext(Dispatchers.IO) {
-            runCatching(action)
+            com.postzeew.mvvmcore.runCatching { action.invoke() }
         }
     }
 
