@@ -1,7 +1,148 @@
 package com.postzeew.mvvmcore
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.postzeew.mvvmcore.BaseViewModelImpl.ActionType.BLOCKING
+import com.postzeew.mvvmcore.BaseViewModelImpl.ActionType.UNBLOCKING
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-interface BaseViewModel
+interface BaseViewModel {
+    val screenState: LiveData<ScreenStateView.State>
+    val showLoaderOverContent: LiveData<Boolean>
+    val showErrorOverContent: LiveData<Throwable>
 
-open class BaseViewModelImpl : ViewModel(), BaseViewModel
+    suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: () -> T)
+
+    suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: () -> T)
+
+    suspend fun executeEmptyBlockingAction(action: () -> Unit)
+
+    suspend fun executeEmptyUnblockingAction(action: () -> Unit)
+
+    suspend fun <T> executeCustomAction(
+        action: () -> T,
+        onActionStarted: (() -> Unit)? = null,
+        onActionEnded: (() -> Unit)? = null,
+        onActionCompleted: (T) -> Unit,
+        onActionFailed: ((Throwable) -> Unit)? = null
+    )
+
+    suspend fun executeEmptyCustomAction(
+        action: () -> Unit,
+        onActionStarted: (() -> Unit)? = null,
+        onActionEnded: (() -> Unit)? = null,
+        onActionCompleted: (() -> Unit)? = null,
+        onActionFailed: ((Throwable) -> Unit)? = null
+    )
+}
+
+abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
+    override val screenState = MutableLiveData<ScreenStateView.State>()
+    override val showLoaderOverContent = MutableLiveData<Boolean>()
+    override val showErrorOverContent = SingleLiveEvent<Throwable>()
+
+    override suspend fun <T> executeBlockingAction(resultLiveData: MutableLiveData<T>, action: () -> T) {
+        executeAction(action, BLOCKING, resultLiveData::setValue)
+    }
+
+    override suspend fun <T> executeUnblockingAction(resultLiveData: SingleLiveEvent<T>, action: () -> T) {
+        executeAction(action, UNBLOCKING, resultLiveData::setValue)
+    }
+
+    override suspend fun executeEmptyBlockingAction(action: () -> Unit) {
+        executeAction(action, BLOCKING)
+    }
+
+    override suspend fun executeEmptyUnblockingAction(action: () -> Unit) {
+        executeAction(action, UNBLOCKING)
+    }
+
+    override suspend fun <T> executeCustomAction(
+        action: () -> T,
+        onActionStarted: (() -> Unit)?,
+        onActionEnded: (() -> Unit)?,
+        onActionCompleted: (T) -> Unit,
+        onActionFailed: ((Throwable) -> Unit)?
+    ) {
+        onActionStarted?.invoke()
+        val result = runCatching(action)
+        onActionEnded?.invoke()
+        @Suppress("UNCHECKED_CAST")
+        when (result) {
+            is Result.Success<*> -> onActionCompleted.invoke(result.value as T)
+            is Result.Failure -> onActionFailed?.invoke(result.throwable)
+        }
+    }
+
+    override suspend fun executeEmptyCustomAction(
+        action: () -> Unit,
+        onActionStarted: (() -> Unit)?,
+        onActionEnded: (() -> Unit)?,
+        onActionCompleted: (() -> Unit)?,
+        onActionFailed: ((Throwable) -> Unit)?
+    ) {
+        onActionStarted?.invoke()
+        val result = runCatching(action)
+        onActionEnded?.invoke()
+        @Suppress("UNCHECKED_CAST")
+        when (result) {
+            is Result.Success<*> -> onActionCompleted?.invoke()
+            is Result.Failure -> onActionFailed?.invoke(result.throwable)
+        }
+    }
+
+    private suspend fun <T> executeAction(action: () -> T, actionType: ActionType, successAction: ((T) -> Unit)? = null) {
+        onActionStarted(actionType)
+        val result = executeActionOnBackgroundThread(action)
+        onActionEnded(result, actionType, successAction)
+    }
+
+    private suspend fun <T> executeActionOnBackgroundThread(action: () -> T): Result {
+        return withContext(Dispatchers.IO) {
+            runCatching(action)
+        }
+    }
+
+    private fun onActionStarted(actionType: ActionType) {
+        showLoading(actionType)
+    }
+
+    private fun <T> onActionEnded(result: Result, actionType: ActionType, successAction: ((T) -> Unit)?) {
+        hideLoading(actionType)
+
+        when (result) {
+            is Result.Success<*> -> successAction?.let {
+                @Suppress("UNCHECKED_CAST")
+                it.invoke(result.value as T)
+            }
+            is Result.Failure -> showError(actionType, result.throwable)
+        }
+    }
+
+    private fun showLoading(actionType: ActionType) {
+        when (actionType) {
+            BLOCKING -> screenState.value = ScreenStateView.State.Loading
+            UNBLOCKING -> showLoaderOverContent.value = true
+        }
+    }
+
+    private fun hideLoading(actionType: ActionType) {
+        when (actionType) {
+            BLOCKING -> screenState.value = ScreenStateView.State.None
+            UNBLOCKING -> showLoaderOverContent.value = false
+        }
+    }
+
+    private fun showError(actionType: ActionType, throwable: Throwable) {
+        when (actionType) {
+            BLOCKING -> screenState.value = ScreenStateView.State.Error(throwable)
+            UNBLOCKING -> showErrorOverContent.value = throwable
+        }
+    }
+
+    private enum class ActionType {
+        BLOCKING, UNBLOCKING
+    }
+}
