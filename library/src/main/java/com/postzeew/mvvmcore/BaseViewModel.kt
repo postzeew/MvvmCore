@@ -36,6 +36,8 @@ interface BaseViewModel {
         onActionCompleted: (() -> Unit)? = null,
         onActionFailed: ((Throwable) -> Unit)? = null
     )
+
+    fun onRetryClicked()
 }
 
 abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
@@ -97,6 +99,10 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
         }
     }
 
+    override fun onRetryClicked() {
+
+    }
+
     private suspend fun <T> executeAction(action: suspend () -> T, actionType: ActionType, successAction: ((T) -> Unit)? = null) {
         onActionStarted(actionType)
         val result = executeActionOnBackgroundThread(action)
@@ -105,7 +111,9 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
 
     private suspend fun <T> executeActionOnBackgroundThread(action: suspend () -> T): Result {
         return withContext(Dispatchers.IO) {
-            com.postzeew.mvvmcore.runCatching { action.invoke() }
+            com.postzeew.mvvmcore.runCatching {
+                action.invoke()
+            }
         }
     }
 

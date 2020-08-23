@@ -36,6 +36,14 @@ class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewMod
         }
     }
 
+    override fun onRetryClicked() {
+        viewModelScope.launch {
+            executeBlockingAction(dateTime) {
+                getDateTime()
+            }
+        }
+    }
+
     private suspend fun getDateTime(): String {
         return api.getWorldTime().datetime
     }

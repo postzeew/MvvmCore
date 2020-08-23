@@ -27,6 +27,11 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
         subscribeToViewModel()
     }
 
+    override fun setContentView(layoutResID: Int) {
+        super.setContentView(layoutResID)
+        screenStateView.onRetryClickListener = viewModel::onRetryClicked
+    }
+
     @CallSuper
     protected open fun subscribeToViewModel() {
         viewModel.screenState.observe(this, Observer { state ->
