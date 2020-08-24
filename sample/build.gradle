@@ -41,7 +41,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // MvvmCore library
-    implementation project(":library")
+    implementation project(":mvvmcore")
 
     // Core
     implementation "androidx.core:core-ktx:$coreKtxVersion"
