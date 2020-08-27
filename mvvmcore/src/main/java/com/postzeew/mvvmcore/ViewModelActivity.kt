@@ -14,11 +14,11 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
         ViewModelProvider(this, MvvmCore.viewModelFactory).get(viewModelImplClass) as T
     }
 
-    private val screenStateView: ScreenStateView by lazy {
+    private val screenStateView: ScreenStateView? by lazy {
         findViewById<ScreenStateView>(R.id.screenStateView)
     }
 
-    private val overlayLoaderView: OverlayLoaderView by lazy {
+    private val overlayLoaderView: OverlayLoaderView? by lazy {
         findViewById<OverlayLoaderView>(R.id.overlayLoaderView)
     }
 
@@ -34,13 +34,13 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
 
     override fun setContentView(layoutResID: Int) {
         super.setContentView(layoutResID)
-        screenStateView.onRetryClickListener = viewModel::onRetryClicked
+        screenStateView?.onRetryClickListener = viewModel::onRetryClicked
     }
 
     @CallSuper
     protected open fun subscribeToViewModel() {
         viewModel.screenState.observe(this, Observer { state ->
-            screenStateView.state = state
+            screenStateView?.state = state
         })
 
         viewModel.showErrorOverContent.observe(this, Observer { throwable ->
@@ -48,7 +48,7 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
         })
 
         viewModel.showLoaderOverContent.observe(this, Observer { show ->
-            overlayLoaderView.showOrGone(show)
+            overlayLoaderView?.showOrGone(show)
         })
 
     }
