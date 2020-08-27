@@ -1,5 +1,6 @@
 package com.postzeew.mvvmcore
 
+import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -37,6 +38,8 @@ interface BaseViewModel {
         onActionFailed: ((Throwable) -> Unit)? = null
     )
 
+    fun onViewCreated(data: Parcelable?)
+    fun onViewRecreated()
     fun onRetryClicked()
 }
 
@@ -97,6 +100,14 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
             is Result.Success<*> -> onActionCompleted?.invoke()
             is Result.Failure -> onActionFailed?.invoke(result.throwable)
         }
+    }
+
+    override fun onViewCreated(data: Parcelable?) {
+
+    }
+
+    override fun onViewRecreated() {
+
     }
 
     override fun onRetryClicked() {

@@ -1,5 +1,6 @@
 package com.postzeew.mvvmcore.sample
 
+import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.postzeew.mvvmcore.BaseViewModel
@@ -15,8 +16,6 @@ private const val BASE_URL = "https://worldtimeapi.org/api/"
 
 interface MainViewModel : BaseViewModel {
     val dateTime: LiveData<String>
-
-    fun onViewCreated()
 }
 
 class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewModel {
@@ -28,7 +27,7 @@ class MainViewModelImpl @Inject constructor() : BaseViewModelImpl(), MainViewMod
         .build()
         .create(WorldTimeApi::class.java)
 
-    override fun onViewCreated() {
+    override fun onViewCreated(data: Parcelable?) {
         viewModelScope.launch {
             executeUnblockingAction(dateTime) {
                 getDateTime()

@@ -25,6 +25,11 @@ abstract class ViewModelActivity<T : BaseViewModel>(viewModelImplClass: Class<ou
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         subscribeToViewModel()
+        if (savedInstanceState == null) {
+            viewModel.onViewCreated(intent)
+        } else {
+            viewModel.onViewRecreated()
+        }
     }
 
     override fun setContentView(layoutResID: Int) {

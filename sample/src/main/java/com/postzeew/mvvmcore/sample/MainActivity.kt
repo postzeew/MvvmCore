@@ -10,8 +10,6 @@ class MainActivity : ViewModelActivity<MainViewModel>(viewModelImplClass = MainV
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        viewModel.onViewCreated()
     }
 
     override fun subscribeToViewModel() {
