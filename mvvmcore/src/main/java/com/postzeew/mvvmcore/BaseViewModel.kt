@@ -141,7 +141,6 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
                 it.invoke(result.value as T)
             }
             is Result.Failure -> {
-                result.throwable.printStackTrace()
                 showError(actionType, result.throwable)
             }
         }
