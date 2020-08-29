@@ -140,7 +140,10 @@ abstract class BaseViewModelImpl : ViewModel(), BaseViewModel {
                 @Suppress("UNCHECKED_CAST")
                 it.invoke(result.value as T)
             }
-            is Result.Failure -> showError(actionType, result.throwable)
+            is Result.Failure -> {
+                result.throwable.printStackTrace()
+                showError(actionType, result.throwable)
+            }
         }
     }
 
